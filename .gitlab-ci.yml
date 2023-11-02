@@ -1,0 +1,67 @@
+---
+stages:
+  - lint
+  - validate
+  - push
+
+variables:
+  GITHUB_USER: lotusnoir
+
+###########################
+# job dependencies:
+#       file: .mega-linter.yml
+mega-linter:
+  stage: lint
+  image: oxsecurity/megalinter:v7
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+  script: ["true"]
+  allow_failure: true
+  variables:
+    DEFAULT_WORKSPACE: ${CI_PROJECT_DIR}
+
+###########################
+packer-validation:
+  stage: validate
+  image:
+    name: hashicorp/terraform
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+  script:
+    - echo "Validating Terraform templates"
+    - terraform --version
+    - terraform init
+    - terraform validate .
+
+
+##################################################
+# PUSH CODE WHEN ALL TEST OK
+##################################################
+push_src_on_github:
+  stage: push
+  image: alpine:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+  before_script:
+    - apk add git openssh-client
+    - eval $(ssh-agent -s)
+    - echo "${GITHUB_USER_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tUser ansible\n\tStrictHostKeyChecking no\n\tForwardAgent yes\n\n" > ~/.ssh/config
+    - git config --global user.email "${GITHUB_USER_EMAIL}"
+    - git config --global user.name "${GITHUB_USER}"
+    - git config --global init.defaultBranch main
+    - COMMENT=$(git log -1 --pretty=%B | head -1)
+  script:
+    - git clone git@github.com:${GITHUB_USER}/terraform-module-proxmox_vm.git /tmp/terraform-module-proxmox_vm
+    - find /tmp/terraform-module-proxmox_vm -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf "{}" +;
+    - rm -rf .git
+    - cp -r . /tmp/terraform-module-proxmox_vm/
+    - cd /tmp/terraform-module-proxmox_vm
+    - git add -A
+    - git commit -m "${COMMENT}" || echo "No changes, nothing to commit!"
+    - git push --follow-tags

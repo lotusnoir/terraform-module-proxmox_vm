@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"debian","Source":"../../terraform-module-proxmox_vm","Dir":"../../terraform-module-proxmox_vm"},{"Key":"vm-ora9","Source":"../../terraform-module-proxmox_vm","Dir":"../../terraform-module-proxmox_vm"}]}
