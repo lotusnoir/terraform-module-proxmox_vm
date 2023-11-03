@@ -130,7 +130,7 @@ resource "proxmox_vm_qemu" "vm_qemu" {
 
   # these may need to be adjusted
   lifecycle {
-    ignore_changes = [network, ciuser]
+    ignore_changes = [network, ciuser, tags]
     // ignore_changes  = [network,disk,ciuser]
     //create_before_destroy = false
     //prevent_destroy = false
