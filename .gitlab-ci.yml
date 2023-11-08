@@ -21,7 +21,7 @@ mega-linter:
     DEFAULT_WORKSPACE: ${CI_PROJECT_DIR}
 
 ###########################
-packer-validation:
+terraform-validation:
   stage: validate
   image:
     name: hashicorp/terraform
