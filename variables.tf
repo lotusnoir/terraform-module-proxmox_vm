@@ -61,13 +61,13 @@ variable "tablet" {
 variable "boot" {
   description = "The boot order for the VM.  Options: floppy (a), hard disk (c), CD-ROM (d), or network (n). Defaults to cdn"
   type        = string
-  default     = "cdn"
+  default     = null
 }
 
 variable "bootdisk" {
   description = "Enable booting from specified disk."
   type        = string
-  default     = "scsi0"
+  default     = null
 }
 
 variable "agent" {
@@ -115,7 +115,7 @@ variable "hagroup" {
 variable "qemu_os" {
   description = "The type of OS in the guest. Set properly to allow Proxmox to enable optimizations for the appropriate guest OS. Defaults to l26"
   type        = string
-  default     = "l26"
+  default     = "other"
 }
 
 variable "memory" {
@@ -157,7 +157,7 @@ variable "cpu_type" {
 variable "numa" {
   description = "Whether to enable Non-Uniform Memory Access in the guest. Defaults to false"
   type        = bool
-  default     = false
+  default     = null
 }
 
 variable "kvm" {
@@ -360,12 +360,12 @@ variable "vm_network_default_firewall" {
 variable "vm_network_default_rate" {
   description = "Network device rate limit in mbps (megabytes per second) as floating point number. Set to 0 to disable rate limiting"
   type        = number
-  default     = 0
+  default     = null
 }
 variable "vm_network_default_queues" {
   description = "Number of packet queues to be used on the device. Requires virtio model to have an effect"
   type        = number
-  default     = 0
+  default     = null
 }
 
 variable "vm_network_default_link_down" {
@@ -401,7 +401,7 @@ variable "vm_disk_default_size" {
 variable "vm_disk_default_format" {
   description = "The drive’s backing file’s data format. Default is raw"
   type        = string
-  default     = "raw"
+  default     = null
 }
 variable "vm_disk_default_cache" {
   description = "The drive’s cache mode. Options: directsync, none, unsafe, writeback, writethrough"
@@ -411,7 +411,7 @@ variable "vm_disk_default_cache" {
 variable "vm_disk_default_backup" {
   description = "Whether the drive should be included when making backups"
   type        = bool
-  default     = false
+  default     = true
 }
 variable "vm_disk_default_iothread" {
   description = "Whether to use iothreads for this drive. Only effective with a disk of type virtio, or scsi when the the emulated controller type (scsihw top level block argument) is virtio-scsi-single"

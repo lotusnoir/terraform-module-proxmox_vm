@@ -8,30 +8,25 @@ module "debian" {
   description  = "TEST Server"
   agent      = 1
   clone       = "template-linux-debian-12"
-  os_type = "l26"
   memory     = 2048
   sockets    = "1"
   cores      = 2
   tags = "aa;bb"
-  bootdisk  = "virtio0"
   scsihw     = "virtio-scsi-pci"
   vm_disk = [
     {
-      type         = "scsi"
+      type         = "virtio"
       storage      = "local-lvm"
       size         = "10G"
-      format       = "raw"
     }
     #{
-    #  type         = "virtio0"
+    #  type         = "virtio"
     #  storage      = "local-lvm"
     #  size         = "15G"
-    #  format       = "raw"
     #}
   ]
   vm_network = [
      {
-      id        = 0
       model     = "virtio"
       bridge    = "vmbr0"
     },
