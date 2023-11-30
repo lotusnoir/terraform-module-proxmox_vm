@@ -1,10 +1,26 @@
 repos:
-  # Versioning: Commit Messages & Changelog
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.27.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
     hooks:
-      - id: commitizen
-        stages: [commit-msg]
+      - id: check-added-large-files
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-byte-order-marker
+      - id: check-merge-conflict
+      - id: check-executables-have-shebangs
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: check-toml
+      - id: check-json
+      - id: pretty-format-json
+        args: [--autofix, --no-sort-keys]
+      - id: check-yaml
+        files: .*\.(yaml|yml)$
+      - id: debug-statements
+      - id: double-quote-string-fixer
+      - id: name-tests-test
+      - id: requirements-txt-fixer
 
   # Autoformat: YAML, JSON, Markdown, etc.
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -33,6 +49,7 @@ repos:
       - id: markdownlint
         args: ["--fix", "--disable", "MD013 MD033"]
 
+  # Lint: Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.83.6
     hooks:
@@ -43,25 +60,9 @@ repos:
       - id: terraform_checkov
       - id: terraform_docs
 
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  # Versioning: Commit Messages & Changelog
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.27.1
     hooks:
-      - id: check-added-large-files
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-      - id: mixed-line-ending
-      - id: check-byte-order-marker
-      - id: check-merge-conflict
-      - id: check-executables-have-shebangs
-      - id: check-symlinks
-      - id: detect-private-key
-      - id: check-toml
-      - id: check-json
-      - id: pretty-format-json
-        args: [--autofix, --no-sort-keys]
-      - id: check-yaml
-        files: .*\.(yaml|yml)$
-      - id: debug-statements
-      - id: double-quote-string-fixer
-      - id: name-tests-test
-      - id: requirements-txt-fixer
+      - id: commitizen
+        stages: [commit-msg]
