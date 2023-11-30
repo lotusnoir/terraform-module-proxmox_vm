@@ -26,8 +26,8 @@ terraform-validation:
   image:
     name: hashicorp/terraform
     entrypoint:
-      - '/usr/bin/env'
-      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      - "/usr/bin/env"
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
   script:
@@ -35,7 +35,6 @@ terraform-validation:
     - terraform --version
     - terraform init
     - terraform validate .
-
 
 ##################################################
 # PUSH CODE WHEN ALL TEST OK

@@ -7,12 +7,12 @@ module "vm-ora9" {
   #vmid        = "7000"
   description = "TEST Server"
 
-  agent       = 1
-  clone       = "template-linux-oraclelinux-9"
-  sockets     = "1"
-  cores       = 2
-  memory      = 2048
-  tags        = "aa;bb"
+  agent   = 1
+  clone   = "template-linux-oraclelinux-9"
+  sockets = "1"
+  cores   = 2
+  memory  = 2048
+  tags    = "aa;bb"
 
   # Cloud init specific
   sshkeys      = "ssh-ed25519 AAAAC3NzaC1lZxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

@@ -527,4 +527,3 @@ variable "usb" {
 //   type        = bool
 //   default     = false
 // }
-
