@@ -41,19 +41,19 @@ variable "bios" {
 }
 
 variable "onboot" {
-  description = "	Whether to have the VM startup after the PVE node starts. Defaults to false"
+  description = "Whether to have the VM startup after the PVE node starts. Defaults to false"
   type        = bool
   default     = false
 }
 
-variable "oncreate" {
-  description = "Whether to have the VM startup after the VM is created. Defaults to true"
-  type        = bool
-  default     = true
+variable "vm_state" {
+  description = "The desired state of the VM, options are running, stopped and started. Do note that started will only start the vm on creation and won't fully manage the power state unlike running and stopped do."
+  type        = string
+  default     = "running"
 }
 
 variable "tablet" {
-  description = "	Enable/disable the USB tablet device. This device is usually needed to allow absolute mouse positioning with VNC. Defaults to true"
+  description = "Enable/disable the USB tablet device. This device is usually needed to allow absolute mouse positioning with VNC. Defaults to true"
   type        = bool
   default     = true
 }
@@ -331,6 +331,12 @@ variable "vm_network" {
   default     = []
 }
 
+variable "vm_network_default_id" {
+  description = ""
+  type        = string
+  default     = "net0"
+}
+
 variable "vm_network_default_model" {
   description = "Required Network Card Model. The virtio model provides the best performance with very low CPU overhead. If your guest does not support this driver, it is usually best to use e1000. Options: e1000, e1000-82540em, e1000-82544gc, e1000-82545em, i82551, i82557b, i82559er, ne2k_isa, ne2k_pci, pcnet, rtl8139, virtio, vmxnet3"
   type        = string
@@ -376,119 +382,120 @@ variable "vm_network_default_link_down" {
 
 # vm_disk variables
 
-variable "vm_disk" {
-  description = "A disk block used to configure the disk devices"
-  type        = list(any)
-  default     = []
-}
+#variable "vm_disks" {
+#  description = "A disk block used to configure the disk devices"
+#  type        = any
+#  default     = {}
+#}
 
-variable "vm_disk_default_type" {
-  description = "Required. The type of disk device to add. Options: ide, sata, scsi, virtio"
-  type        = string
-  default     = "scsi"
-}
-variable "vm_disk_default_storage" {
-  description = "Required. The name of the storage pool on which to store the disk"
-  type        = string
-  default     = "local-lvm"
-}
 
-variable "vm_disk_default_size" {
-  description = "Required. The size of the created disk, Must include G, M, or K, where they represent Gigabytes, Megabytes, and Kilobytes respectively"
-  type        = string
-  default     = null
-}
-variable "vm_disk_default_format" {
-  description = "The drive’s backing file’s data format. Default is raw"
-  type        = string
-  default     = null
-}
-variable "vm_disk_default_cache" {
-  description = "The drive’s cache mode. Options: directsync, none, unsafe, writeback, writethrough"
-  type        = string
-  default     = null
-}
-variable "vm_disk_default_backup" {
-  description = "Whether the drive should be included when making backups"
-  type        = bool
-  default     = true
-}
-variable "vm_disk_default_iothread" {
-  description = "Whether to use iothreads for this drive. Only effective with a disk of type virtio, or scsi when the the emulated controller type (scsihw top level block argument) is virtio-scsi-single"
-  type        = number
-  default     = 0
-}
-variable "vm_disk_default_replicate" {
-  description = "Whether the drive should considered for replication jobs"
-  type        = number
-  default     = 0
-}
-
-variable "vm_disk_default_ssd" {
-  description = "Whether to expose this drive as an SSD, rather than a rotational hard disk"
-  type        = number
-  default     = null
-}
-
-variable "vm_disk_default_discard" {
-  description = "Controls whether to pass discard/trim requests to the underlying storage. Only effective when the underlying storage supports thin provisioning"
-  type        = string
-  default     = null
-}
-
-variable "vm_disk_default_mbps" {
-  description = "Maximum r/w speed in megabytes per second. 0 means unlimited."
-  type        = number
-  default     = null
-}
-
-variable "vm_disk_default_mbps_rd" {
-  description = "Maximum read speed in megabytes per second. 0 means unlimited."
-  type        = number
-  default     = null
-}
-
-variable "vm_disk_default_mbps_rd_max" {
-  description = "Maximum read speed in megabytes per second. 0 means unlimited."
-  type        = number
-  default     = null
-}
-
-variable "vm_disk_default_mbps_wr" {
-  description = "Maximum write speed in megabytes per second. 0 means unlimited."
-  type        = number
-  default     = null
-}
-
-variable "vm_disk_default_mbps_wr_max" {
-  description = "Maximum throttled write pool in megabytes per second. 0 means unlimited."
-  type        = number
-  default     = null
-}
-
-variable "vm_disk_default_file" {
-  description = "The filename portion of the path to the drive’s backing volume. You shouldn't need to specify this, use the storage parameter instead"
-  type        = string
-  default     = null
-}
-
-variable "vm_disk_default_media" {
-  description = "The drive’s media type. Options: cdrom, disk"
-  type        = string
-  default     = null
-}
-
-variable "vm_disk_default_volume" {
-  description = "The full path to the drive’s backing volume including the storage pool name. You shouldn't need to specify this, use the storage parameter instead"
-  type        = string
-  default     = null
-}
-
-variable "vm_disk_default_storage_type" {
-  description = "The type of pool that storage is backed by. You shouldn't need to specify this, use the storage parameter instead"
-  type        = string
-  default     = null
-}
+#variable "vm_disk_default_type" {
+#  description = "Required. The type of disk device to add. Options: ide, sata, scsi, virtio"
+#  type        = string
+#  default     = "scsi"
+#}
+#variable "vm_disk_default_storage" {
+#  description = "Required. The name of the storage pool on which to store the disk"
+#  type        = string
+#  default     = "local-lvm"
+#}
+#
+#variable "vm_disk_default_size" {
+#  description = "Required. The size of the created disk, Must include G, M, or K, where they represent Gigabytes, Megabytes, and Kilobytes respectively"
+#  type        = string
+#  default     = null
+#}
+#variable "vm_disk_default_format" {
+#  description = "The drive’s backing file’s data format. Default is raw"
+#  type        = string
+#  default     = null
+#}
+#variable "vm_disk_default_cache" {
+#  description = "The drive’s cache mode. Options: directsync, none, unsafe, writeback, writethrough"
+#  type        = string
+#  default     = null
+#}
+#variable "vm_disk_default_backup" {
+#  description = "Whether the drive should be included when making backups"
+#  type        = bool
+#  default     = true
+#}
+#variable "vm_disk_default_iothread" {
+#  description = "Whether to use iothreads for this drive. Only effective with a disk of type virtio, or scsi when the the emulated controller type (scsihw top level block argument) is virtio-scsi-single"
+#  type        = number
+#  default     = 0
+#}
+#variable "vm_disk_default_replicate" {
+#  description = "Whether the drive should considered for replication jobs"
+#  type        = number
+#  default     = 0
+#}
+#
+#variable "vm_disk_default_ssd" {
+#  description = "Whether to expose this drive as an SSD, rather than a rotational hard disk"
+#  type        = number
+#  default     = null
+#}
+#
+#variable "vm_disk_default_discard" {
+#  description = "Controls whether to pass discard/trim requests to the underlying storage. Only effective when the underlying storage supports thin provisioning"
+#  type        = string
+#  default     = null
+#}
+#
+#variable "vm_disk_default_mbps" {
+#  description = "Maximum r/w speed in megabytes per second. 0 means unlimited."
+#  type        = number
+#  default     = null
+#}
+#
+#variable "vm_disk_default_mbps_rd" {
+#  description = "Maximum read speed in megabytes per second. 0 means unlimited."
+#  type        = number
+#  default     = null
+#}
+#
+#variable "vm_disk_default_mbps_rd_max" {
+#  description = "Maximum read speed in megabytes per second. 0 means unlimited."
+#  type        = number
+#  default     = null
+#}
+#
+#variable "vm_disk_default_mbps_wr" {
+#  description = "Maximum write speed in megabytes per second. 0 means unlimited."
+#  type        = number
+#  default     = null
+#}
+#
+#variable "vm_disk_default_mbps_wr_max" {
+#  description = "Maximum throttled write pool in megabytes per second. 0 means unlimited."
+#  type        = number
+#  default     = null
+#}
+#
+#variable "vm_disk_default_file" {
+#  description = "The filename portion of the path to the drive’s backing volume. You shouldn't need to specify this, use the storage parameter instead"
+#  type        = string
+#  default     = null
+#}
+#
+#variable "vm_disk_default_media" {
+#  description = "The drive’s media type. Options: cdrom, disk"
+#  type        = string
+#  default     = null
+#}
+#
+#variable "vm_disk_default_volume" {
+#  description = "The full path to the drive’s backing volume including the storage pool name. You shouldn't need to specify this, use the storage parameter instead"
+#  type        = string
+#  default     = null
+#}
+#
+#variable "vm_disk_default_storage_type" {
+#  description = "The type of pool that storage is backed by. You shouldn't need to specify this, use the storage parameter instead"
+#  type        = string
+#  default     = null
+#}
 
 variable "serial" {
   description = "Create a serial device inside the VM (up to a maximum of 4 can be specified)"

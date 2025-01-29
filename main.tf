@@ -8,13 +8,12 @@ resource "proxmox_vm_qemu" "vm_qemu" {
 
   bios     = var.bios
   onboot   = var.onboot
-  oncreate = var.oncreate
+  vm_state = var.vm_state
   tablet   = var.tablet
   boot     = var.boot
   bootdisk = var.bootdisk
 
   agent      = var.agent
-  iso        = var.iso
   pxe        = var.pxe
   clone      = var.clone
   full_clone = var.full_clone
@@ -76,6 +75,7 @@ resource "proxmox_vm_qemu" "vm_qemu" {
   dynamic "network" {
     for_each = local.vm_network
     content {
+      id        = lookup(network.value, "id", local.vm_network_default_id)
       model     = lookup(network.value, "model", local.vm_network_default_model)
       macaddr   = lookup(network.value, "macaddr", local.vm_network_default_macaddr)
       bridge    = lookup(network.value, "bridge", local.vm_network_default_bridge)
@@ -87,30 +87,66 @@ resource "proxmox_vm_qemu" "vm_qemu" {
     }
   }
 
-  dynamic "disk" {
-    for_each = local.vm_disk
-    content {
-      type         = lookup(disk.value, "type", local.vm_disk_default_type)
-      storage      = lookup(disk.value, "storage", local.vm_disk_default_storage)
-      size         = lookup(disk.value, "size", local.vm_disk_default_size)
-      format       = lookup(disk.value, "format", local.vm_disk_default_format)
-      cache        = lookup(disk.value, "cache", local.vm_disk_default_cache)
-      backup       = lookup(disk.value, "backup", local.vm_disk_default_backup)
-      iothread     = lookup(disk.value, "iothread", local.vm_disk_default_iothread)
-      replicate    = lookup(disk.value, "replicate", local.vm_disk_default_replicate)
-      ssd          = lookup(disk.value, "ssd", local.vm_disk_default_ssd)
-      discard      = lookup(disk.value, "discard", local.vm_disk_default_discard)
-      mbps         = lookup(disk.value, "mbps", local.vm_disk_default_mbps)
-      mbps_rd      = lookup(disk.value, "mbps_rd", local.vm_disk_default_mbps_rd)
-      mbps_rd_max  = lookup(disk.value, "mbps_rd_max", local.vm_disk_default_mbps_rd_max)
-      mbps_wr      = lookup(disk.value, "mbps_wr", local.vm_disk_default_mbps_wr)
-      mbps_wr_max  = lookup(disk.value, "mbps_wr_max", local.vm_disk_default_mbps_wr_max)
-      file         = lookup(disk.value, "file", local.vm_disk_default_file)
-      media        = lookup(disk.value, "media", local.vm_disk_default_media)
-      volume       = lookup(disk.value, "volume", local.vm_disk_default_volume)
-      storage_type = lookup(disk.value, "storage_type", local.vm_disk_default_storage_type)
+  disks {
+    ide {
+      ide0 {
+        cdrom {
+          iso = var.iso
+        }
+      }
+      ide1 {
+        cloudinit {
+          storage = "local-lvm"
+        }
+      }
+    }
+    virtio {
+      virtio0 {
+        disk {
+          storage = "local-lvm"
+          size    = "10G"
+        }
+      }
     }
   }
+
+
+  #dynamic "disks" {
+  #  for_each = var.vm_disks
+  #  content {
+
+  #    dynamic "ide" {
+  #      for_each = disks.value.disk == "virtio" ? disks.value : {}
+  #      content {
+
+  #      }
+  #      }
+  #    dynamic "virtio" {
+  #      for_each = disks.value.disk == "virtio" ? disks.value : {}
+  #      content {
+  #        type         = d
+  #        storage      =
+  #        size         =
+  #        format       =
+  #        cache        =
+  #        backup       =
+  #        iothread     =
+  #        replicate    =
+  #        ssd          =
+  #        discard      =
+  #        mbps         =
+  #        mbps_rd      =
+  #        mbps_rd_max  =
+  #        mbps_wr      =
+  #        mbps_wr_max  =
+  #        file         =
+  #        media        =
+  #        volume       =
+  #        storage_type =
+  #      }
+  #    }
+  #  }
+  #}
 
   dynamic "serial" {
     for_each = var.serial == null ? [] : list(var.serial)
@@ -123,6 +159,7 @@ resource "proxmox_vm_qemu" "vm_qemu" {
   dynamic "usb" {
     for_each = var.usb == null ? [] : list(var.usb)
     content {
+      id   = usb.value.id
       host = usb.value.host
       usb3 = usb.value.usb3
     }
