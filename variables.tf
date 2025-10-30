@@ -1,18 +1,17 @@
-#variable "vm_enable" {
-#  description = "Enables or Disables VM creation. Defaults to false"
-#  type        = bool
-#  default     = false
-#}
-
 variable "name" {
-  description = "Required The name of the VM within Proxmox."
+  description = "Required - The name of the VM within Proxmox."
+  type        = string
+}
+
+variable "target_node" {
+  description = "The name of the Proxmox Node on which to place the VM."
   type        = string
   default     = null
 }
 
-variable "target_node" {
-  description = "Required The name of the Proxmox Node on which to place the VM."
-  type        = string
+variable "target_nodes" {
+  description = "A list of PVE node names on which to place the VM."
+  type        = set(string)
   default     = null
 }
 
@@ -46,10 +45,29 @@ variable "onboot" {
   default     = false
 }
 
+variable "startup" {
+  description = "The startup and shutdown behaviour"
+  type        = string
+  default     = null
+}
+
 variable "vm_state" {
   description = "The desired state of the VM, options are running, stopped and started. Do note that started will only start the vm on creation and won't fully manage the power state unlike running and stopped do."
   type        = string
   default     = "running"
+}
+
+### Deprecated
+#variable "oncreate" {
+#  description = "Whether to have the VM startup after the VM is created (deprecated, use vm_state instead)"
+#  type        = bool
+#  default     = true
+#}
+
+variable "protection" {
+  description = "Enable/disable the VM protection from being removed. The default value of false indicates the VM is removable."
+  type        = bool
+  default     = false
 }
 
 variable "tablet" {
@@ -71,26 +89,30 @@ variable "bootdisk" {
 }
 
 variable "agent" {
-  description = "Defaults to 0"
+  description = "Set to 1 to enable the QEMU Guest Agent. Note, you must run the qemu-guest-agent daemon in the guest for this to have any effect."
   type        = number
   default     = 0
 }
 
-variable "iso" {
-  description = "The name of the ISO image to mount to the VM. Either clone or iso needs to be set"
-  type        = string
-  default     = null
-}
-
 variable "pxe" {
-  description = "If set to true, enable PXE boot of the VM. Also requires a boot order be set with Network first"
+  description = "If set to true, enable PXE boot of the VM. Also requires a boot order be set with Network included (eg boot = 'order=scsi0;net0'). Note that pxe is mutually exclusive with clone modes."
   type        = bool
   default     = null
 }
 
 variable "clone" {
-  description = "The base VM from which to clone to create the new VM. Note that clone is mutually exclussive with pxe and iso modes"
+  description = "The base VM name from which to clone to create the new VM. Note that clone is mutually exclusive with clone_id and pxe modes."
   type        = string
+  default     = null
+  validation {
+    condition     = (var.pxe == null && var.clone != null)
+    error_message = "You cannot set both clone and pxe at the same time."
+  }
+}
+
+variable "clone_id" {
+  description = "The base VM id from which to clone to create the new VM. Note that clone_id is mutually exclusive with clone and pxe modes."
+  type        = number
   default     = null
 }
 
@@ -130,42 +152,6 @@ variable "balloon" {
   default     = 0
 }
 
-variable "sockets" {
-  description = "The number of CPU sockets to allocate to the VM. Defaults to 1"
-  type        = number
-  default     = 1
-}
-
-variable "cores" {
-  description = "The number of CPU cores per CPU socket to allocate to the VM. Defaults to 1"
-  type        = number
-  default     = 1
-}
-
-variable "vcpus" {
-  description = "The number of vCPUs plugged into the VM when it starts. If 0, this is set automatically by Proxmox to sockets * cores. Defaults to 0"
-  type        = number
-  default     = 0
-}
-
-variable "cpu_type" {
-  description = "The type of CPU to emulate in the Guest. Defaults to host"
-  type        = string
-  default     = "host"
-}
-
-variable "numa" {
-  description = "Whether to enable Non-Uniform Memory Access in the guest. Defaults to false"
-  type        = bool
-  default     = null
-}
-
-variable "kvm" {
-  description = "Defaults to true"
-  type        = bool
-  default     = true
-}
-
 variable "hotplug" {
   description = "Comma delimited list of hotplug features to enable. Options: network, disk, cpu, memory, usb. Set to 0 to disable hotplug. Defaults to network,disk,usb"
   type        = string
@@ -178,7 +164,6 @@ variable "scsihw" {
   default     = "lsi"
 }
 
-
 variable "pool" {
   description = "The resource pool to which the VM will be added. Optional"
   type        = string
@@ -186,10 +171,22 @@ variable "pool" {
 }
 
 variable "tags" {
-  description = "	Tags of the VM. This is only meta information. Optional"
+  description = "Tags of the VM. This is only meta information. Optional"
   type        = string
-  default     = null
+  default     = ""
 }
+
+#variable "rng" {
+#  description = "The RNG device to add to the VM, more info in RNG Block section"
+#  type        = string
+#  default     = ""
+#}
+#
+#variable "tpm_state" {
+#  description = "The TPM device to add to the VM, more info in TPM Block section"
+#  type        = string
+#  default     = ""
+#}
 
 variable "force_create" {
   description = "If false, and a vm of the same name, on the same node exists, terraform will attempt to reconfigure that VM with these settings. Set to true to always create a new VM. Defaults to true"
@@ -235,8 +232,9 @@ variable "ssh_private_key" {
   default     = null
 }
 
+################################
 # Cloud Init Specific
-
+################################
 variable "ci_wait" {
   description = "How to long in seconds to wait for before provisioning. Defaults to 30"
   type        = number
@@ -259,6 +257,12 @@ variable "cicustom" {
   description = "Instead specifying ciuser, cipasword, etc... you can specify the path to a custom cloud-init config file here. Grants more flexibility in configuring cloud-init"
   type        = string
   default     = null
+}
+
+variable "ciupgrade" {
+  description = "Whether to upgrade the packages on the guest during provisioning. Restarts the VM when set to true"
+  type        = bool
+  default     = false
 }
 
 variable "searchdomain" {
@@ -284,27 +288,23 @@ variable "ipconfig0" {
   type        = string
   default     = null
 }
-
 variable "ipconfig1" {
   description = "The second IP address to assign to the guest. Same format as ipconfig0"
   type        = string
   default     = null
 }
-
 variable "ipconfig2" {
   description = "The third IP address to assign to the guest. Same format as ipconfig0"
   type        = string
   default     = null
 }
-
 variable "ipconfig3" {
-  description = "The third IP address to assign to the guest. Same format as ipconfig0"
+  description = "The fouth IP address to assign to the guest. Same format as ipconfig0"
   type        = string
   default     = null
 }
-
 variable "ipconfig4" {
-  description = "The third IP address to assign to the guest. Same format as ipconfig0"
+  description = "The fifth IP address to assign to the guest. Same format as ipconfig0"
   type        = string
   default     = null
 }
@@ -315,186 +315,173 @@ variable "automatic_reboot" {
   default     = true
 }
 
+variable "automatic_reboot_severity" {
+  description = "Sets the severity of the error/warning when automatic_reboot is false. Values can be error or warning."
+  type        = string
+  default     = "error"
+}
+
+variable "skip_ipv4" {
+  description = "Tells proxmox that acquiring an IPv4 address from the qemu guest agent isn't required, it will still return an ipv4 address if it could obtain one. Useful for reducing retries in environments withou"
+  type        = bool
+  default     = null
+}
+
+variable "skip_ipv6" {
+  description = "Tells proxmox that acquiring an IPv6 address from the qemu guest agent isn't required, it will still return an ipv6 address if it could obtain one. Useful for reducing retries in environments without ipv6."
+  type        = bool
+  default     = null
+}
+
+variable "agent_timeout" {
+  description = "Timeout in seconds to keep trying to obtain an IP address from the guest agent one we have a connection."
+  type        = number
+  default     = 90
+}
+
+### Computed
+#variable "current_node" {
+#  description = "Computed The current node of the Qemu guest is on."
+#  type        = string
+#  default     = null
+#}
+
+######################################
+variable "cpu" {
+  description = "The cpu block is used to configure the cpu."
+  type = object({
+    affinity = optional(string)
+    cores    = number
+    limit    = number
+    numa     = bool
+    sockets  = number
+    type     = string
+    units    = number
+    vcores   = number
+    flags = optional(object({
+      md_clear    = optional(string)
+      pcid        = optional(string)
+      spec_ctrl   = optional(string)
+      ssbd        = optional(string)
+      ibpb        = optional(string)
+      virt_ssbd   = optional(string)
+      amd_ssbd    = optional(string)
+      amd_no_ssb  = optional(string)
+      pbpe1gb     = optional(string)
+      hv_tlbflush = optional(string)
+      hv_evmcs    = optional(string)
+      aes         = optional(string)
+    }))
+  })
+  default = {
+    cores   = 1
+    limit   = 0
+    numa    = false
+    sockets = 1
+    type    = "host"
+    units   = 0
+    vcores  = 0
+  }
+}
 
 variable "vga" {
   description = "The vga block is used to configure the display device."
   type = object({
-    type   = string
-    memory = number
+    type   = optional(string)
+    memory = optional(number)
   })
   default = null
 }
-# vm_network variables
-variable "vm_network" {
-  description = "Used to configure the network devices"
-  type        = list(any)
-  default     = []
+
+variable "network" {
+  description = "The network block is used to configure the network."
+  type = object({
+    id        = optional(number)
+    model     = optional(string)
+    macaddr   = optional(string)
+    bridge    = optional(string)
+    tag       = optional(number)
+    firewall  = optional(bool)
+    mtu       = optional(number)
+    rate      = optional(number)
+    queues    = optional(number)
+    link_down = optional(bool)
+  })
+  default = null
 }
 
-variable "vm_network_default_id" {
-  description = ""
-  type        = string
-  default     = "net0"
-}
-
-variable "vm_network_default_model" {
-  description = "Required Network Card Model. The virtio model provides the best performance with very low CPU overhead. If your guest does not support this driver, it is usually best to use e1000. Options: e1000, e1000-82540em, e1000-82544gc, e1000-82545em, i82551, i82557b, i82559er, ne2k_isa, ne2k_pci, pcnet, rtl8139, virtio, vmxnet3"
-  type        = string
-  default     = "virtio"
-}
-variable "vm_network_default_macaddr" {
-  description = "Override the randomly generated MAC Address for the VM"
+### temporary
+variable "iso" {
+  description = "The name of the ISO image to mount to the VM. Either clone or iso needs to be set"
   type        = string
   default     = null
 }
-variable "vm_network_default_bridge" {
-  description = "Bridge to which the network device should be attached. The Proxmox VE standard bridge is called vmbr0"
-  type        = string
-  default     = "vmbr0"
-}
 
-variable "vm_network_default_tag" {
-  description = "The VLAN tag to apply to packets on this device. -1 disables VLAN tagging"
-  type        = number
-  default     = -1
-}
-variable "vm_network_default_firewall" {
-  description = "Whether to enable the Proxmox firewall on this network device"
-  type        = bool
-  default     = false
-}
-variable "vm_network_default_rate" {
-  description = "Network device rate limit in mbps (megabytes per second) as floating point number. Set to 0 to disable rate limiting"
-  type        = number
-  default     = null
-}
-variable "vm_network_default_queues" {
-  description = "Number of packet queues to be used on the device. Requires virtio model to have an effect"
-  type        = number
-  default     = null
-}
+#variable "disks" {
+#  description = "Disk configuration for the VM"
+#  type = object({
+#    ide = map(optional(object({
+#        cdrom = optional(object({
+#          iso = string
+#	   passthrough = bool
+#        }))
+#      })))
+#    sata = map(optional(object({
+#        cdrom = optional(object({
+#          iso = string
+#	   passthrough = bool
+#        }))
+#      })))
+#    scsi = map(optional(object({
+#        cdrom = optional(object({
+#          iso = string
+#        }))
+#      })))
+#    virtio = map(optional(object({
+#        disk = optional(object({
+#          storage = string
+#          size    = string
+#        }))
+#      })))
+#    })
+#  }
 
-variable "vm_network_default_link_down" {
-  description = "Whether this interface should be disconnected (like pulling the plug)"
-  type        = bool
-  default     = false
-}
-
-# vm_disk variables
-
-#variable "vm_disks" {
-#  description = "A disk block used to configure the disk devices"
-#  type        = any
-#  default     = {}
-#}
-
-
-#variable "vm_disk_default_type" {
-#  description = "Required. The type of disk device to add. Options: ide, sata, scsi, virtio"
-#  type        = string
-#  default     = "scsi"
-#}
-#variable "vm_disk_default_storage" {
-#  description = "Required. The name of the storage pool on which to store the disk"
-#  type        = string
-#  default     = "local-lvm"
-#}
+#variable "disk" {
+#  description = "The disk block is used to configure the disk devices. It may be specified multiple times. This block does not diff as pretty as the disks block, but it is more flexible for modules. Putting the disks in alphanumeric order based on the value of slot is recommended for readability."
+#  type = map(object({
 #
-#variable "vm_disk_default_size" {
-#  description = "Required. The size of the created disk, Must include G, M, or K, where they represent Gigabytes, Megabytes, and Kilobytes respectively"
-#  type        = string
-#  default     = null
-#}
-#variable "vm_disk_default_format" {
-#  description = "The drive’s backing file’s data format. Default is raw"
-#  type        = string
-#  default     = null
-#}
-#variable "vm_disk_default_cache" {
-#  description = "The drive’s cache mode. Options: directsync, none, unsafe, writeback, writethrough"
-#  type        = string
-#  default     = null
-#}
-#variable "vm_disk_default_backup" {
-#  description = "Whether the drive should be included when making backups"
-#  type        = bool
-#  default     = true
-#}
-#variable "vm_disk_default_iothread" {
-#  description = "Whether to use iothreads for this drive. Only effective with a disk of type virtio, or scsi when the the emulated controller type (scsihw top level block argument) is virtio-scsi-single"
-#  type        = number
-#  default     = 0
-#}
-#variable "vm_disk_default_replicate" {
-#  description = "Whether the drive should considered for replication jobs"
-#  type        = number
-#  default     = 0
-#}
-#
-#variable "vm_disk_default_ssd" {
-#  description = "Whether to expose this drive as an SSD, rather than a rotational hard disk"
-#  type        = number
-#  default     = null
-#}
-#
-#variable "vm_disk_default_discard" {
-#  description = "Controls whether to pass discard/trim requests to the underlying storage. Only effective when the underlying storage supports thin provisioning"
-#  type        = string
-#  default     = null
-#}
-#
-#variable "vm_disk_default_mbps" {
-#  description = "Maximum r/w speed in megabytes per second. 0 means unlimited."
-#  type        = number
-#  default     = null
-#}
-#
-#variable "vm_disk_default_mbps_rd" {
-#  description = "Maximum read speed in megabytes per second. 0 means unlimited."
-#  type        = number
-#  default     = null
-#}
-#
-#variable "vm_disk_default_mbps_rd_max" {
-#  description = "Maximum read speed in megabytes per second. 0 means unlimited."
-#  type        = number
-#  default     = null
-#}
-#
-#variable "vm_disk_default_mbps_wr" {
-#  description = "Maximum write speed in megabytes per second. 0 means unlimited."
-#  type        = number
-#  default     = null
-#}
-#
-#variable "vm_disk_default_mbps_wr_max" {
-#  description = "Maximum throttled write pool in megabytes per second. 0 means unlimited."
-#  type        = number
-#  default     = null
-#}
-#
-#variable "vm_disk_default_file" {
-#  description = "The filename portion of the path to the drive’s backing volume. You shouldn't need to specify this, use the storage parameter instead"
-#  type        = string
-#  default     = null
-#}
-#
-#variable "vm_disk_default_media" {
-#  description = "The drive’s media type. Options: cdrom, disk"
-#  type        = string
-#  default     = null
-#}
-#
-#variable "vm_disk_default_volume" {
-#  description = "The full path to the drive’s backing volume including the storage pool name. You shouldn't need to specify this, use the storage parameter instead"
-#  type        = string
-#  default     = null
-#}
-#
-#variable "vm_disk_default_storage_type" {
-#  description = "The type of pool that storage is backed by. You shouldn't need to specify this, use the storage parameter instead"
-#  type        = string
-#  default     = null
+#    asyncio              = optional(string)
+#    backup               = optional(bool)
+#    cache                = optional(string)
+#    discard              = optional(bool)
+#    disk_file            = optional(string)
+#    emulatessd           = optional(bool)
+#    format               = optional(string)
+#    id                   = optional(number)
+#    iops_r_burst         = optional(number)
+#    iops_r_burst_length  = optional(number)
+#    iops_r_concurrent    = optional(number)
+#    iops_wr_burst        = optional(number)
+#    iops_wr_burst_length = optional(number)
+#    iops_wr_concurrent   = optional(number)
+#    iothread             = optional(bool)
+#    iso                  = optional(string)
+#    linked_disk_id       = optional(number)
+#    mbps_r_burst         = optional(number)
+#    mbps_r_concurrent    = optional(number)
+#    mbps_wr_burst        = optional(number)
+#    mbps_wr_concurrent   = optional(number)
+#    passthrough          = optional(bool)
+#    readonly             = optional(bool)
+#    replicate            = optional(bool)
+#    serial               = optional(string)
+#    size                 = optional(string)
+#    slot                 = optional(string)
+#    storage              = optional(string)
+#    type                 = optional(string)
+#    wwn                  = optional(string)
+#  })
+#  default = null
 #}
 
 variable "serial" {
