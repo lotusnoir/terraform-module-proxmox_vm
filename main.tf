@@ -6,7 +6,7 @@ resource "proxmox_vm_qemu" "vm_qemu" {
   description                 = var.description
   define_connection_info      = var.define_connection_info
   bios                        = var.bios
-  onboot                      = var.onboot
+  start_at_node_boot          = var.start_at_node_boot
   startup                     = var.startup
   vm_state                    = var.vm_state
   protection                  = var.protection
@@ -113,82 +113,87 @@ resource "proxmox_vm_qemu" "vm_qemu" {
     }
   }
 
-
-  #  disks {
-  #    dynamic "ide" {
-  #      for_each = var.disks.ide != null ? { var.disks.ide } : {}
-  #      content {
-  #        "${ide.key}" {
-  #          dynamic "cdrom" {
-  #            for_each = var.disks.ide != null ? { var.disks.ide } : {}
-  #              iso = ide.value.iso
-  #          }
-  #        }
-  #      }
-  #    }
-  #  }
-  #}
-
   disks {
+    #############################
+    # IDE
+    #############################
     ide {
-      ide0 {
-        cdrom {
-          iso = var.iso
+      dynamic "ide0" {
+        for_each = try(var.disks.ide.cdrom, null) != null ? [var.disks.ide.cdrom] : []
+        content {
+          cdrom {
+            iso = ide0.value.iso
+          }
         }
       }
-      ide1 {
-        cloudinit {
-          storage = "local-lvm"
+      dynamic "ide1" {
+        for_each = try(var.disks.ide.cloudinit, null) != null ? [var.disks.ide.cloudinit] : []
+        content {
+          cloudinit {
+            storage = ide1.value.storage
+          }
         }
       }
     }
+
+    #############################
+    # VIRTIO (multi-disks)
+    #############################
     virtio {
-      virtio0 {
-        disk {
-          storage = "local-lvm"
-          size    = "10G"
+      dynamic "virtio0" {
+        for_each = length(var.disks.virtio) > 0 ? [var.disks.virtio[0]] : []
+        content {
+          disk {
+            size    = virtio0.value.size
+            storage = virtio0.value.storage
+            format  = virtio0.value.format
+            backup  = true
+          }
         }
       }
+
+      # virtio1
+      dynamic "virtio1" {
+        for_each = length(var.disks.virtio) > 1 ? [var.disks.virtio[1]] : []
+        content {
+          disk {
+            size    = virtio1.value.size
+            storage = virtio1.value.storage
+            format  = virtio1.value.format
+            backup  = true
+          }
+        }
+      }
+
+      # virtio2
+      dynamic "virtio2" {
+        for_each = length(var.disks.virtio) > 2 ? [var.disks.virtio[2]] : []
+        content {
+          disk {
+            size    = virtio2.value.size
+            storage = virtio2.value.storage
+            format  = virtio2.value.format
+            #cache        = virtio2.value.cache
+            #iothread     = virtio2.value.iothread
+            #replicate    = virtio2.value.replicate
+            #ssd          = virtio2.value.ssd
+            #discard      = virtio2.value.discard
+            #mbps         = virtio2.value.mbps
+            #mbps_rd      = virtio2.value.mbps_rd
+            #mbps_rd_max  = virtio2.value.mbps_rd_max
+            #mbps_wr      = virtio2.value.mbps_wr
+            #mbps_wr_max  = virtio2.value.mbps_wr_max
+            #file         = virtio2.value.file
+            #media        = virtio2.value.media
+            #volume       = virtio2.value.volume
+            #storage_type = virtio2.value.storage_type
+            backup = true
+          }
+        }
+      }
+
     }
   }
-
-
-  #dynamic "disks" {
-  #  for_each = var.vm_disks
-  #  content {
-
-  #    dynamic "ide" {
-  #      for_each = disks.value.disk == "virtio" ? disks.value : {}
-  #      content {
-
-  #      }
-  #      }
-  #    dynamic "virtio" {
-  #      for_each = disks.value.disk == "virtio" ? disks.value : {}
-  #      content {
-  #        type         = d
-  #        storage      =
-  #        size         =
-  #        format       =
-  #        cache        =
-  #        backup       =
-  #        iothread     =
-  #        replicate    =
-  #        ssd          =
-  #        discard      =
-  #        mbps         =
-  #        mbps_rd      =
-  #        mbps_rd_max  =
-  #        mbps_wr      =
-  #        mbps_wr_max  =
-  #        file         =
-  #        media        =
-  #        volume       =
-  #        storage_type =
-  #      }
-  #    }
-  #  }
-  #}
 
   dynamic "serial" {
     for_each = var.serial != null ? [var.serial] : []

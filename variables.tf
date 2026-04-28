@@ -18,7 +18,7 @@ variable "target_nodes" {
 variable "vmid" {
   description = "The ID of the VM in Proxmox. The default value of 0 indicates it should use the next available ID in the sequence"
   type        = number
-  default     = 0
+  default     = null
 }
 
 variable "description" {
@@ -39,7 +39,7 @@ variable "bios" {
   default     = "seabios"
 }
 
-variable "onboot" {
+variable "start_at_node_boot" {
   description = "Whether to have the VM startup after the PVE node starts. Defaults to false"
   type        = bool
   default     = false
@@ -410,41 +410,154 @@ variable "network" {
   default = null
 }
 
-### temporary
-variable "iso" {
-  description = "The name of the ISO image to mount to the VM. Either clone or iso needs to be set"
-  type        = string
-  default     = null
-}
+variable "disks" {
+  description = "Disk configuration for the VM"
+  type = object({
+    ide = optional(object({
+      cdrom = optional(object({
+        iso         = string
+        passthrough = bool
+      }))
+      cloudinit = optional(object({
+        storage = string
+      }))
+      disk = optional(object({
+        asyncio              = optional(string)
+        backup               = optional(bool)
+        cache                = optional(string)
+        discard              = optional(bool)
+        emulatessd           = optional(bool)
+        format               = optional(string)
+        id                   = optional(number)
+        iops_r_burst         = optional(number)
+        iops_r_burst_length  = optional(number)
+        iops_r_concurrent    = optional(number)
+        iops_wr_burst        = optional(number)
+        iops_wr_burst_length = optional(number)
+        iops_wr_concurrent   = optional(number)
+        iothread             = optional(bool)
+        linked_disk_id       = optional(number)
+        mbps_r_burst         = optional(number)
+        mbps_r_concurrent    = optional(number)
+        mbps_wr_burst        = optional(number)
+        mbps_wr_concurrent   = optional(number)
+        readonly             = optional(bool)
+        replicate            = optional(bool)
+        serial               = optional(string)
+        size                 = optional(string)
+        storage              = optional(string)
+      }))
+      passthrough = optional(object({
+        storage = string
+      }))
+    }))
 
-#variable "disks" {
-#  description = "Disk configuration for the VM"
-#  type = object({
-#    ide = map(optional(object({
-#        cdrom = optional(object({
-#          iso = string
-#	   passthrough = bool
-#        }))
-#      })))
-#    sata = map(optional(object({
-#        cdrom = optional(object({
-#          iso = string
-#	   passthrough = bool
-#        }))
-#      })))
-#    scsi = map(optional(object({
-#        cdrom = optional(object({
-#          iso = string
-#        }))
-#      })))
-#    virtio = map(optional(object({
-#        disk = optional(object({
-#          storage = string
-#          size    = string
-#        }))
-#      })))
-#    })
-#  }
+    sata = optional(object({
+      cdrom = optional(object({
+        iso         = string
+        passthrough = bool
+      }))
+      cloudinit = optional(object({
+        storage = string
+      }))
+      disk = optional(object({
+        asyncio              = optional(string)
+        backup               = optional(bool)
+        cache                = optional(string)
+        discard              = optional(bool)
+        emulatessd           = optional(bool)
+        format               = optional(string)
+        id                   = optional(number)
+        iops_r_burst         = optional(number)
+        iops_r_burst_length  = optional(number)
+        iops_r_concurrent    = optional(number)
+        iops_wr_burst        = optional(number)
+        iops_wr_burst_length = optional(number)
+        iops_wr_concurrent   = optional(number)
+        iothread             = optional(bool)
+        linked_disk_id       = optional(number)
+        mbps_r_burst         = optional(number)
+        mbps_r_concurrent    = optional(number)
+        mbps_wr_burst        = optional(number)
+        mbps_wr_concurrent   = optional(number)
+        readonly             = optional(bool)
+        replicate            = optional(bool)
+        serial               = optional(string)
+        size                 = optional(string)
+        storage              = optional(string)
+      }))
+      passthrough = optional(object({
+        storage = string
+      }))
+    }))
+
+    scsi = optional(object({
+      cdrom = optional(object({
+        iso         = string
+        passthrough = bool
+      }))
+      cloudinit = optional(object({
+        storage = string
+      }))
+      disk = optional(object({
+        asyncio              = optional(string)
+        backup               = optional(bool)
+        cache                = optional(string)
+        discard              = optional(bool)
+        emulatessd           = optional(bool)
+        format               = optional(string)
+        id                   = optional(number)
+        iops_r_burst         = optional(number)
+        iops_r_burst_length  = optional(number)
+        iops_r_concurrent    = optional(number)
+        iops_wr_burst        = optional(number)
+        iops_wr_burst_length = optional(number)
+        iops_wr_concurrent   = optional(number)
+        iothread             = optional(bool)
+        linked_disk_id       = optional(number)
+        mbps_r_burst         = optional(number)
+        mbps_r_concurrent    = optional(number)
+        mbps_wr_burst        = optional(number)
+        mbps_wr_concurrent   = optional(number)
+        readonly             = optional(bool)
+        replicate            = optional(bool)
+        serial               = optional(string)
+        size                 = optional(string)
+        storage              = optional(string)
+      }))
+      passthrough = optional(object({
+        asyncio              = optional(string)
+        backup               = optional(bool, true)
+        cache                = optional(string)
+        discard              = optional(bool, false)
+        emulatessd           = optional(bool)
+        file                 = optional(bool, false)
+        iops_r_burst         = optional(number, 0)
+        iops_r_burst_length  = optional(number, 0)
+        iops_r_concurrent    = optional(number, 0)
+        iops_wr_burst        = optional(number, 0)
+        iops_wr_burst_length = optional(number, 0)
+        iops_wr_concurrent   = optional(number, 0)
+        iothread             = optional(bool, false)
+        mbps_r_burst         = optional(number, 0.0)
+        mbps_r_concurrent    = optional(number, 0.0)
+        mbps_wr_burst        = optional(number, 0.0)
+        mbps_wr_concurrent   = optional(number, 0.0)
+        readonly             = optional(bool, false)
+        replicate            = optional(bool, false)
+        serial               = optional(string)
+        size                 = optional(string)
+      }))
+    }))
+
+
+    virtio = optional(list(object({
+      size    = string
+      storage = string
+      format  = optional(string, "raw")
+    })))
+  })
+}
 
 #variable "disk" {
 #  description = "The disk block is used to configure the disk devices. It may be specified multiple times. This block does not diff as pretty as the disks block, but it is more flexible for modules. Putting the disks in alphanumeric order based on the value of slot is recommended for readability."

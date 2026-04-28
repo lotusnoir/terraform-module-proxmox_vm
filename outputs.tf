@@ -12,6 +12,12 @@
 ### ${dns} ansible_host=${private-ip[index]} # ${private-id[index]}
 ### %{ endfor ~}
 
+output "VM" {
+  description = "VM Names"
+  value       = proxmox_vm_qemu.vm_qemu[*].name
+}
+
+
 ### The Ansible inventory file
 
 #resource "local_file" "AnsibleInventory" {
