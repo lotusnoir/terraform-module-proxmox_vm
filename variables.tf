@@ -472,7 +472,7 @@ variable "disks" {
       }))
     }))
 
-    sata = optional(object({
+    sata = optional(map(object({
       cdrom = optional(object({
         iso         = string
         passthrough = optional(bool, false)
@@ -529,9 +529,9 @@ variable "disks" {
         serial               = optional(string)
         size                 = optional(string)
       }))
-    }))
+    })))
 
-    scsi = optional(object({
+    scsi = optional(map(object({
       cdrom = optional(object({
         iso         = string
         passthrough = optional(bool, false)
@@ -588,7 +588,7 @@ variable "disks" {
         serial               = optional(string)
         size                 = optional(string)
       }))
-    }))
+    })))
 
     virtio = optional(list(object({
       asyncio              = optional(string)

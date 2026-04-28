@@ -138,105 +138,247 @@ resource "proxmox_vm_qemu" "vm_qemu" {
     }
 
     #############################
+    # SCSI (multi-disks)
+    #############################
+    scsi {
+      dynamic "scsi0" {
+        for_each = try(var.disks.scsi.scsi0, null) != null ? [var.disks.scsi.scsi0] : []
+        content {
+          dynamic "cdrom" {
+            for_each = try(scsi0.value.cdrom, null) != null ? [scsi0.value.cdrom] : []
+            content {
+              iso         = cdrom.value.iso
+              passthrough = cdrom.value.passthrough
+            }
+          }
+          dynamic "cloudinit" {
+            for_each = try(scsi0.value.cloudinit, null) != null ? [scsi0.value.cloudinit] : []
+            content {
+              storage = cloudinit.value.storage
+            }
+          }
+          dynamic "passthrough" {
+            for_each = try(scsi0.value.passthrough, null) != null ? [scsi0.value.passthrough] : []
+            content {
+              asyncio              = passthrough.value.asyncio
+              backup               = passthrough.value.backup
+              cache                = passthrough.value.cache
+              discard              = passthrough.value.discard
+              emulatessd           = passthrough.value.emulatessd
+              file                 = passthrough.value.file
+              iops_r_burst         = passthrough.value.iops_r_burst
+              iops_r_burst_length  = passthrough.value.iops_r_burst_length
+              iops_r_concurrent    = passthrough.value.iops_r_concurrent
+              iops_wr_burst        = passthrough.value.iops_wr_burst
+              iops_wr_burst_length = passthrough.value.iops_wr_burst_length
+              iops_wr_concurrent   = passthrough.value.iops_wr_concurrent
+              iothread             = passthrough.value.iothread
+              mbps_r_burst         = passthrough.value.mbps_r_burst
+              mbps_r_concurrent    = passthrough.value.mbps_r_concurrent
+              mbps_wr_burst        = passthrough.value.mbps_wr_burst
+            }
+          }
+          dynamic "disk" {
+            for_each = try(scsi0.value.disk, null) != null ? [scsi0.value.disk] : []
+            content {
+              asyncio              = disk.value.asyncio
+              backup               = disk.value.backup
+              cache                = disk.value.cache
+              discard              = disk.value.discard
+              format               = disk.value.format
+              id                   = disk.value.id
+              iops_r_burst         = disk.value.iops_r_burst
+              iops_r_burst_length  = disk.value.iops_r_burst_length
+              iops_r_concurrent    = disk.value.iops_r_concurrent
+              iops_wr_burst        = disk.value.iops_wr_burst
+              iops_wr_burst_length = disk.value.iops_wr_burst_length
+              iops_wr_concurrent   = disk.value.iops_wr_concurrent
+              iothread             = disk.value.iothread
+              linked_disk_id       = disk.value.linked_disk_id
+              mbps_r_burst         = disk.value.mbps_r_burst
+              mbps_r_concurrent    = disk.value.mbps_r_concurrent
+              mbps_wr_burst        = disk.value.mbps_wr_burst
+              mbps_wr_concurrent   = disk.value.mbps_wr_concurrent
+              readonly             = disk.value.readonly
+              replicate            = disk.value.replicate
+              serial               = disk.value.serial
+              size                 = disk.value.size
+              storage              = disk.value.storage
+            }
+          }
+        }
+      }
+
+      dynamic "scsi1" {
+        for_each = try(var.disks.scsi.scsi1, null) != null ? [var.disks.scsi.scsi1] : []
+        content {
+          dynamic "cdrom" {
+            for_each = try(scsi1.value.cdrom, null) != null ? [scsi1.value.cdrom] : []
+            content {
+              iso         = cdrom.value.iso
+              passthrough = cdrom.value.passthrough
+            }
+          }
+          dynamic "cloudinit" {
+            for_each = try(scsi1.value.cloudinit, null) != null ? [scsi1.value.cloudinit] : []
+            content {
+              storage = cloudinit.value.storage
+            }
+          }
+          dynamic "passthrough" {
+            for_each = try(scsi1.value.passthrough, null) != null ? [scsi1.value.passthrough] : []
+            content {
+              asyncio              = passthrough.value.asyncio
+              backup               = passthrough.value.backup
+              cache                = passthrough.value.cache
+              discard              = passthrough.value.discard
+              emulatessd           = passthrough.value.emulatessd
+              file                 = passthrough.value.file
+              iops_r_burst         = passthrough.value.iops_r_burst
+              iops_r_burst_length  = passthrough.value.iops_r_burst_length
+              iops_r_concurrent    = passthrough.value.iops_r_concurrent
+              iops_wr_burst        = passthrough.value.iops_wr_burst
+              iops_wr_burst_length = passthrough.value.iops_wr_burst_length
+              iops_wr_concurrent   = passthrough.value.iops_wr_concurrent
+              iothread             = passthrough.value.iothread
+              mbps_r_burst         = passthrough.value.mbps_r_burst
+              mbps_r_concurrent    = passthrough.value.mbps_r_concurrent
+              mbps_wr_burst        = passthrough.value.mbps_wr_burst
+            }
+          }
+          dynamic "disk" {
+            for_each = try(scsi1.value.disk, null) != null ? [scsi1.value.disk] : []
+            content {
+              asyncio              = disk.value.asyncio
+              backup               = disk.value.backup
+              cache                = disk.value.cache
+              discard              = disk.value.discard
+              format               = disk.value.format
+              id                   = disk.value.id
+              iops_r_burst         = disk.value.iops_r_burst
+              iops_r_burst_length  = disk.value.iops_r_burst_length
+              iops_r_concurrent    = disk.value.iops_r_concurrent
+              iops_wr_burst        = disk.value.iops_wr_burst
+              iops_wr_burst_length = disk.value.iops_wr_burst_length
+              iops_wr_concurrent   = disk.value.iops_wr_concurrent
+              iothread             = disk.value.iothread
+              linked_disk_id       = disk.value.linked_disk_id
+              mbps_r_burst         = disk.value.mbps_r_burst
+              mbps_r_concurrent    = disk.value.mbps_r_concurrent
+              mbps_wr_burst        = disk.value.mbps_wr_burst
+              mbps_wr_concurrent   = disk.value.mbps_wr_concurrent
+              readonly             = disk.value.readonly
+              replicate            = disk.value.replicate
+              serial               = disk.value.serial
+              size                 = disk.value.size
+              storage              = disk.value.storage
+            }
+          }
+        }
+      }
+    }
+
+
+    #############################
     # VIRTIO (multi-disks)
     #############################
-    virtio {
-      dynamic "virtio0" {
-        for_each = length(var.disks.virtio) > 0 ? [var.disks.virtio[0]] : []
-        content {
-          disk {
-            asyncio              = virtio0.value.asyncio
-            backup               = virtio0.value.backup
-            cache                = virtio0.value.cache
-            discard              = virtio0.value.discard
-            format               = virtio0.value.format
-            id                   = virtio0.value.id
-            iops_r_burst         = virtio0.value.iops_r_burst
-            iops_r_burst_length  = virtio0.value.iops_r_burst_length
-            iops_r_concurrent    = virtio0.value.iops_r_concurrent
-            iops_wr_burst        = virtio0.value.iops_wr_burst
-            iops_wr_burst_length = virtio0.value.iops_wr_burst_length
-            iops_wr_concurrent   = virtio0.value.iops_wr_concurrent
-            iothread             = virtio0.value.iothread
-            linked_disk_id       = virtio0.value.linked_disk_id
-            mbps_r_burst         = virtio0.value.mbps_r_burst
-            mbps_r_concurrent    = virtio0.value.mbps_r_concurrent
-            mbps_wr_burst        = virtio0.value.mbps_wr_burst
-            mbps_wr_concurrent   = virtio0.value.mbps_wr_concurrent
-            readonly             = virtio0.value.readonly
-            replicate            = virtio0.value.replicate
-            serial               = virtio0.value.serial
-            size                 = virtio0.value.size
-            storage              = virtio0.value.storage
-          }
-        }
-      }
+    #virtio {
+    #  dynamic "virtio0" {
+    #    for_each = length(var.disks.virtio) > 0 ? [var.disks.virtio[0]] : []
+    #    content {
+    #      disk {
+    #        asyncio              = virtio0.value.asyncio
+    #        backup               = virtio0.value.backup
+    #        cache                = virtio0.value.cache
+    #        discard              = virtio0.value.discard
+    #        format               = virtio0.value.format
+    #        id                   = virtio0.value.id
+    #        iops_r_burst         = virtio0.value.iops_r_burst
+    #        iops_r_burst_length  = virtio0.value.iops_r_burst_length
+    #        iops_r_concurrent    = virtio0.value.iops_r_concurrent
+    #        iops_wr_burst        = virtio0.value.iops_wr_burst
+    #        iops_wr_burst_length = virtio0.value.iops_wr_burst_length
+    #        iops_wr_concurrent   = virtio0.value.iops_wr_concurrent
+    #        iothread             = virtio0.value.iothread
+    #        linked_disk_id       = virtio0.value.linked_disk_id
+    #        mbps_r_burst         = virtio0.value.mbps_r_burst
+    #        mbps_r_concurrent    = virtio0.value.mbps_r_concurrent
+    #        mbps_wr_burst        = virtio0.value.mbps_wr_burst
+    #        mbps_wr_concurrent   = virtio0.value.mbps_wr_concurrent
+    #        readonly             = virtio0.value.readonly
+    #        replicate            = virtio0.value.replicate
+    #        serial               = virtio0.value.serial
+    #        size                 = virtio0.value.size
+    #        storage              = virtio0.value.storage
+    #      }
+    #    }
+    #  }
 
-      # virtio1
-      dynamic "virtio1" {
-        for_each = length(var.disks.virtio) > 1 ? [var.disks.virtio[1]] : []
-        content {
-          disk {
-            asyncio              = virtio1.value.asyncio
-            backup               = virtio1.value.backup
-            cache                = virtio1.value.cache
-            discard              = virtio1.value.discard
-            format               = virtio1.value.format
-            id                   = virtio1.value.id
-            iops_r_burst         = virtio1.value.iops_r_burst
-            iops_r_burst_length  = virtio1.value.iops_r_burst_length
-            iops_r_concurrent    = virtio1.value.iops_r_concurrent
-            iops_wr_burst        = virtio1.value.iops_wr_burst
-            iops_wr_burst_length = virtio1.value.iops_wr_burst_length
-            iops_wr_concurrent   = virtio1.value.iops_wr_concurrent
-            iothread             = virtio1.value.iothread
-            linked_disk_id       = virtio1.value.linked_disk_id
-            mbps_r_burst         = virtio1.value.mbps_r_burst
-            mbps_r_concurrent    = virtio1.value.mbps_r_concurrent
-            mbps_wr_burst        = virtio1.value.mbps_wr_burst
-            mbps_wr_concurrent   = virtio1.value.mbps_wr_concurrent
-            readonly             = virtio1.value.readonly
-            replicate            = virtio1.value.replicate
-            serial               = virtio1.value.serial
-            size                 = virtio1.value.size
-            storage              = virtio1.value.storage
-          }
-        }
-      }
+    #  # virtio1
+    #  dynamic "virtio1" {
+    #    for_each = length(var.disks.virtio) > 1 ? [var.disks.virtio[1]] : []
+    #    content {
+    #      disk {
+    #        asyncio              = virtio1.value.asyncio
+    #        backup               = virtio1.value.backup
+    #        cache                = virtio1.value.cache
+    #        discard              = virtio1.value.discard
+    #        format               = virtio1.value.format
+    #        id                   = virtio1.value.id
+    #        iops_r_burst         = virtio1.value.iops_r_burst
+    #        iops_r_burst_length  = virtio1.value.iops_r_burst_length
+    #        iops_r_concurrent    = virtio1.value.iops_r_concurrent
+    #        iops_wr_burst        = virtio1.value.iops_wr_burst
+    #        iops_wr_burst_length = virtio1.value.iops_wr_burst_length
+    #        iops_wr_concurrent   = virtio1.value.iops_wr_concurrent
+    #        iothread             = virtio1.value.iothread
+    #        linked_disk_id       = virtio1.value.linked_disk_id
+    #        mbps_r_burst         = virtio1.value.mbps_r_burst
+    #        mbps_r_concurrent    = virtio1.value.mbps_r_concurrent
+    #        mbps_wr_burst        = virtio1.value.mbps_wr_burst
+    #        mbps_wr_concurrent   = virtio1.value.mbps_wr_concurrent
+    #        readonly             = virtio1.value.readonly
+    #        replicate            = virtio1.value.replicate
+    #        serial               = virtio1.value.serial
+    #        size                 = virtio1.value.size
+    #        storage              = virtio1.value.storage
+    #      }
+    #    }
+    #  }
 
-      # virtio2
-      dynamic "virtio2" {
-        for_each = length(var.disks.virtio) > 2 ? [var.disks.virtio[2]] : []
-        content {
-          disk {
-            asyncio              = virtio2.value.asyncio
-            backup               = virtio2.value.backup
-            cache                = virtio2.value.cache
-            discard              = virtio2.value.discard
-            format               = virtio2.value.format
-            id                   = virtio2.value.id
-            iops_r_burst         = virtio2.value.iops_r_burst
-            iops_r_burst_length  = virtio2.value.iops_r_burst_length
-            iops_r_concurrent    = virtio2.value.iops_r_concurrent
-            iops_wr_burst        = virtio2.value.iops_wr_burst
-            iops_wr_burst_length = virtio2.value.iops_wr_burst_length
-            iops_wr_concurrent   = virtio2.value.iops_wr_concurrent
-            iothread             = virtio2.value.iothread
-            linked_disk_id       = virtio2.value.linked_disk_id
-            mbps_r_burst         = virtio2.value.mbps_r_burst
-            mbps_r_concurrent    = virtio2.value.mbps_r_concurrent
-            mbps_wr_burst        = virtio2.value.mbps_wr_burst
-            mbps_wr_concurrent   = virtio2.value.mbps_wr_concurrent
-            readonly             = virtio2.value.readonly
-            replicate            = virtio2.value.replicate
-            serial               = virtio2.value.serial
-            size                 = virtio2.value.size
-            storage              = virtio2.value.storage
-          }
-        }
-      }
+    #  # virtio2
+    #  dynamic "virtio2" {
+    #    for_each = length(var.disks.virtio) > 2 ? [var.disks.virtio[2]] : []
+    #    content {
+    #      disk {
+    #        asyncio              = virtio2.value.asyncio
+    #        backup               = virtio2.value.backup
+    #        cache                = virtio2.value.cache
+    #        discard              = virtio2.value.discard
+    #        format               = virtio2.value.format
+    #        id                   = virtio2.value.id
+    #        iops_r_burst         = virtio2.value.iops_r_burst
+    #        iops_r_burst_length  = virtio2.value.iops_r_burst_length
+    #        iops_r_concurrent    = virtio2.value.iops_r_concurrent
+    #        iops_wr_burst        = virtio2.value.iops_wr_burst
+    #        iops_wr_burst_length = virtio2.value.iops_wr_burst_length
+    #        iops_wr_concurrent   = virtio2.value.iops_wr_concurrent
+    #        iothread             = virtio2.value.iothread
+    #        linked_disk_id       = virtio2.value.linked_disk_id
+    #        mbps_r_burst         = virtio2.value.mbps_r_burst
+    #        mbps_r_concurrent    = virtio2.value.mbps_r_concurrent
+    #        mbps_wr_burst        = virtio2.value.mbps_wr_burst
+    #        mbps_wr_concurrent   = virtio2.value.mbps_wr_concurrent
+    #        readonly             = virtio2.value.readonly
+    #        replicate            = virtio2.value.replicate
+    #        serial               = virtio2.value.serial
+    #        size                 = virtio2.value.size
+    #        storage              = virtio2.value.storage
+    #      }
+    #    }
+    #  }
 
-    }
+    #}
   }
 
   dynamic "efidisk" {
