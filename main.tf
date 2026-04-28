@@ -122,7 +122,8 @@ resource "proxmox_vm_qemu" "vm_qemu" {
         for_each = try(var.disks.ide.cdrom, null) != null ? [var.disks.ide.cdrom] : []
         content {
           cdrom {
-            iso = ide0.value.iso
+            iso         = ide0.value.iso
+            passthrough = ide0.value.passthrough
           }
         }
       }
@@ -144,10 +145,29 @@ resource "proxmox_vm_qemu" "vm_qemu" {
         for_each = length(var.disks.virtio) > 0 ? [var.disks.virtio[0]] : []
         content {
           disk {
-            size    = virtio0.value.size
-            storage = virtio0.value.storage
-            format  = virtio0.value.format
-            backup  = true
+            asyncio              = virtio0.value.asyncio
+            backup               = virtio0.value.backup
+            cache                = virtio0.value.cache
+            discard              = virtio0.value.discard
+            format               = virtio0.value.format
+            id                   = virtio0.value.id
+            iops_r_burst         = virtio0.value.iops_r_burst
+            iops_r_burst_length  = virtio0.value.iops_r_burst_length
+            iops_r_concurrent    = virtio0.value.iops_r_concurrent
+            iops_wr_burst        = virtio0.value.iops_wr_burst
+            iops_wr_burst_length = virtio0.value.iops_wr_burst_length
+            iops_wr_concurrent   = virtio0.value.iops_wr_concurrent
+            iothread             = virtio0.value.iothread
+            linked_disk_id       = virtio0.value.linked_disk_id
+            mbps_r_burst         = virtio0.value.mbps_r_burst
+            mbps_r_concurrent    = virtio0.value.mbps_r_concurrent
+            mbps_wr_burst        = virtio0.value.mbps_wr_burst
+            mbps_wr_concurrent   = virtio0.value.mbps_wr_concurrent
+            readonly             = virtio0.value.readonly
+            replicate            = virtio0.value.replicate
+            serial               = virtio0.value.serial
+            size                 = virtio0.value.size
+            storage              = virtio0.value.storage
           }
         }
       }
@@ -157,10 +177,29 @@ resource "proxmox_vm_qemu" "vm_qemu" {
         for_each = length(var.disks.virtio) > 1 ? [var.disks.virtio[1]] : []
         content {
           disk {
-            size    = virtio1.value.size
-            storage = virtio1.value.storage
-            format  = virtio1.value.format
-            backup  = true
+            asyncio              = virtio1.value.asyncio
+            backup               = virtio1.value.backup
+            cache                = virtio1.value.cache
+            discard              = virtio1.value.discard
+            format               = virtio1.value.format
+            id                   = virtio1.value.id
+            iops_r_burst         = virtio1.value.iops_r_burst
+            iops_r_burst_length  = virtio1.value.iops_r_burst_length
+            iops_r_concurrent    = virtio1.value.iops_r_concurrent
+            iops_wr_burst        = virtio1.value.iops_wr_burst
+            iops_wr_burst_length = virtio1.value.iops_wr_burst_length
+            iops_wr_concurrent   = virtio1.value.iops_wr_concurrent
+            iothread             = virtio1.value.iothread
+            linked_disk_id       = virtio1.value.linked_disk_id
+            mbps_r_burst         = virtio1.value.mbps_r_burst
+            mbps_r_concurrent    = virtio1.value.mbps_r_concurrent
+            mbps_wr_burst        = virtio1.value.mbps_wr_burst
+            mbps_wr_concurrent   = virtio1.value.mbps_wr_concurrent
+            readonly             = virtio1.value.readonly
+            replicate            = virtio1.value.replicate
+            serial               = virtio1.value.serial
+            size                 = virtio1.value.size
+            storage              = virtio1.value.storage
           }
         }
       }
@@ -170,30 +209,45 @@ resource "proxmox_vm_qemu" "vm_qemu" {
         for_each = length(var.disks.virtio) > 2 ? [var.disks.virtio[2]] : []
         content {
           disk {
-            size    = virtio2.value.size
-            storage = virtio2.value.storage
-            format  = virtio2.value.format
-            #cache        = virtio2.value.cache
-            #iothread     = virtio2.value.iothread
-            #replicate    = virtio2.value.replicate
-            #ssd          = virtio2.value.ssd
-            #discard      = virtio2.value.discard
-            #mbps         = virtio2.value.mbps
-            #mbps_rd      = virtio2.value.mbps_rd
-            #mbps_rd_max  = virtio2.value.mbps_rd_max
-            #mbps_wr      = virtio2.value.mbps_wr
-            #mbps_wr_max  = virtio2.value.mbps_wr_max
-            #file         = virtio2.value.file
-            #media        = virtio2.value.media
-            #volume       = virtio2.value.volume
-            #storage_type = virtio2.value.storage_type
-            backup = true
+            asyncio              = virtio2.value.asyncio
+            backup               = virtio2.value.backup
+            cache                = virtio2.value.cache
+            discard              = virtio2.value.discard
+            format               = virtio2.value.format
+            id                   = virtio2.value.id
+            iops_r_burst         = virtio2.value.iops_r_burst
+            iops_r_burst_length  = virtio2.value.iops_r_burst_length
+            iops_r_concurrent    = virtio2.value.iops_r_concurrent
+            iops_wr_burst        = virtio2.value.iops_wr_burst
+            iops_wr_burst_length = virtio2.value.iops_wr_burst_length
+            iops_wr_concurrent   = virtio2.value.iops_wr_concurrent
+            iothread             = virtio2.value.iothread
+            linked_disk_id       = virtio2.value.linked_disk_id
+            mbps_r_burst         = virtio2.value.mbps_r_burst
+            mbps_r_concurrent    = virtio2.value.mbps_r_concurrent
+            mbps_wr_burst        = virtio2.value.mbps_wr_burst
+            mbps_wr_concurrent   = virtio2.value.mbps_wr_concurrent
+            readonly             = virtio2.value.readonly
+            replicate            = virtio2.value.replicate
+            serial               = virtio2.value.serial
+            size                 = virtio2.value.size
+            storage              = virtio2.value.storage
           }
         }
       }
 
     }
   }
+
+  dynamic "efidisk" {
+    for_each = var.efidisk != null ? [var.efidisk] : []
+    content {
+      pre_enrolled_keys = efidisk.value.pre_enrolled_keys
+      efitype           = efidisk.value.efitype
+      storage           = efidisk.value.storage
+    }
+  }
+
 
   dynamic "serial" {
     for_each = var.serial != null ? [var.serial] : []
@@ -203,18 +257,40 @@ resource "proxmox_vm_qemu" "vm_qemu" {
     }
   }
 
-  dynamic "usb" {
-    for_each = var.usb != null ? [var.usb] : []
+
+  dynamic "tpm_state" {
+    for_each = var.tpm_state != null ? [var.tpm_state] : []
     content {
-      id   = usb.value.id
-      host = usb.value.host
-      usb3 = usb.value.usb3
+      storage = tpm_state.value.storage
+      version = tpm_state.value.version
     }
   }
 
+
+  dynamic "usb" {
+    for_each = var.usb != null ? [var.usb] : []
+    content {
+      id         = usb.value.id
+      device_id  = usb.value.device_id
+      mapping_id = usb.value.mapping_id
+      port_id    = usb.value.port_id
+      usb3       = usb.value.usb3
+    }
+  }
+
+  dynamic "startup_shutdown" {
+    for_each = var.startup_shutdown != null ? [var.startup_shutdown] : []
+    content {
+      order            = startup_shutdown.value.order
+      shutdown_timeout = startup_shutdown.value.shutdown_timeout
+      startup_delay    = startup_shutdown.value.startup_delay
+    }
+  }
+
+
   # these may need to be adjusted
   lifecycle {
-    ignore_changes = [network, ciuser, tags]
+    ignore_changes = [network, ciuser, tags, description]
     // ignore_changes  = [network,disk,ciuser]
     //create_before_destroy = false
     //prevent_destroy = false
