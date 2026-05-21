@@ -616,6 +616,7 @@ variable "disks" {
       storage              = optional(string)
     })))
   })
+  default = null
 }
 
 variable "efidisk" {

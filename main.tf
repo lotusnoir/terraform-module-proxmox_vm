@@ -113,165 +113,180 @@ resource "proxmox_vm_qemu" "vm_qemu" {
     }
   }
 
-  disks {
-    #############################
-    # IDE
-    #############################
-    ide {
-      dynamic "ide0" {
-        for_each = try(var.disks.ide.cdrom, null) != null ? [var.disks.ide.cdrom] : []
-        content {
-          cdrom {
-            iso         = ide0.value.iso
-            passthrough = ide0.value.passthrough
-          }
-        }
-      }
-      dynamic "ide1" {
-        for_each = try(var.disks.ide.cloudinit, null) != null ? [var.disks.ide.cloudinit] : []
-        content {
-          cloudinit {
-            storage = ide1.value.storage
-          }
-        }
-      }
-    }
+  dynamic "disks" {
+    for_each = var.disks != null ? [var.disks] : []
+    content {
+      #############################
+      # IDE
+      #############################
+      dynamic "ide" {
+        for_each = (
+          try(var.disks.ide.cdrom, null) != null ||
+          try(var.disks.ide.cloudinit, null) != null
+        ) ? [1] : []
 
-    #############################
-    # SCSI (multi-disks)
-    #############################
-    scsi {
-      dynamic "scsi0" {
-        for_each = try(var.disks.scsi.scsi0, null) != null ? [var.disks.scsi.scsi0] : []
         content {
-          dynamic "cdrom" {
-            for_each = try(scsi0.value.cdrom, null) != null ? [scsi0.value.cdrom] : []
+
+          dynamic "ide0" {
+            for_each = try(var.disks.ide.cdrom, null) != null ? [var.disks.ide.cdrom] : []
             content {
-              iso         = cdrom.value.iso
-              passthrough = cdrom.value.passthrough
+              cdrom {
+                iso         = ide0.value.iso
+                passthrough = ide0.value.passthrough
+              }
             }
           }
-          dynamic "cloudinit" {
-            for_each = try(scsi0.value.cloudinit, null) != null ? [scsi0.value.cloudinit] : []
+
+          dynamic "ide1" {
+            for_each = try(var.disks.ide.cloudinit, null) != null ? [var.disks.ide.cloudinit] : []
             content {
-              storage = cloudinit.value.storage
-            }
-          }
-          dynamic "passthrough" {
-            for_each = try(scsi0.value.passthrough, null) != null ? [scsi0.value.passthrough] : []
-            content {
-              asyncio              = passthrough.value.asyncio
-              backup               = passthrough.value.backup
-              cache                = passthrough.value.cache
-              discard              = passthrough.value.discard
-              emulatessd           = passthrough.value.emulatessd
-              file                 = passthrough.value.file
-              iops_r_burst         = passthrough.value.iops_r_burst
-              iops_r_burst_length  = passthrough.value.iops_r_burst_length
-              iops_r_concurrent    = passthrough.value.iops_r_concurrent
-              iops_wr_burst        = passthrough.value.iops_wr_burst
-              iops_wr_burst_length = passthrough.value.iops_wr_burst_length
-              iops_wr_concurrent   = passthrough.value.iops_wr_concurrent
-              iothread             = passthrough.value.iothread
-              mbps_r_burst         = passthrough.value.mbps_r_burst
-              mbps_r_concurrent    = passthrough.value.mbps_r_concurrent
-              mbps_wr_burst        = passthrough.value.mbps_wr_burst
-            }
-          }
-          dynamic "disk" {
-            for_each = try(scsi0.value.disk, null) != null ? [scsi0.value.disk] : []
-            content {
-              asyncio              = disk.value.asyncio
-              backup               = disk.value.backup
-              cache                = disk.value.cache
-              discard              = disk.value.discard
-              format               = disk.value.format
-              id                   = disk.value.id
-              iops_r_burst         = disk.value.iops_r_burst
-              iops_r_burst_length  = disk.value.iops_r_burst_length
-              iops_r_concurrent    = disk.value.iops_r_concurrent
-              iops_wr_burst        = disk.value.iops_wr_burst
-              iops_wr_burst_length = disk.value.iops_wr_burst_length
-              iops_wr_concurrent   = disk.value.iops_wr_concurrent
-              iothread             = disk.value.iothread
-              linked_disk_id       = disk.value.linked_disk_id
-              mbps_r_burst         = disk.value.mbps_r_burst
-              mbps_r_concurrent    = disk.value.mbps_r_concurrent
-              mbps_wr_burst        = disk.value.mbps_wr_burst
-              mbps_wr_concurrent   = disk.value.mbps_wr_concurrent
-              readonly             = disk.value.readonly
-              replicate            = disk.value.replicate
-              serial               = disk.value.serial
-              size                 = disk.value.size
-              storage              = disk.value.storage
+              cloudinit {
+                storage = ide1.value.storage
+              }
             }
           }
         }
       }
 
-      dynamic "scsi1" {
-        for_each = try(var.disks.scsi.scsi1, null) != null ? [var.disks.scsi.scsi1] : []
+      #############################
+      # SCSI (multi-disks)
+      #############################
+      dynamic "scsi" {
+        for_each = length(try(var.disks.scsi, {})) > 0 ? [1] : []
         content {
-          dynamic "cdrom" {
-            for_each = try(scsi1.value.cdrom, null) != null ? [scsi1.value.cdrom] : []
+          dynamic "scsi0" {
+            for_each = try(var.disks.scsi.scsi0, null) != null ? [var.disks.scsi.scsi0] : []
             content {
-              iso         = cdrom.value.iso
-              passthrough = cdrom.value.passthrough
+              dynamic "cdrom" {
+                for_each = try(scsi0.value.cdrom, null) != null ? [scsi0.value.cdrom] : []
+                content {
+                  iso         = cdrom.value.iso
+                  passthrough = cdrom.value.passthrough
+                }
+              }
+              dynamic "cloudinit" {
+                for_each = try(scsi0.value.cloudinit, null) != null ? [scsi0.value.cloudinit] : []
+                content {
+                  storage = cloudinit.value.storage
+                }
+              }
+              dynamic "passthrough" {
+                for_each = try(scsi0.value.passthrough, null) != null ? [scsi0.value.passthrough] : []
+                content {
+                  asyncio              = passthrough.value.asyncio
+                  backup               = passthrough.value.backup
+                  cache                = passthrough.value.cache
+                  discard              = passthrough.value.discard
+                  emulatessd           = passthrough.value.emulatessd
+                  file                 = passthrough.value.file
+                  iops_r_burst         = passthrough.value.iops_r_burst
+                  iops_r_burst_length  = passthrough.value.iops_r_burst_length
+                  iops_r_concurrent    = passthrough.value.iops_r_concurrent
+                  iops_wr_burst        = passthrough.value.iops_wr_burst
+                  iops_wr_burst_length = passthrough.value.iops_wr_burst_length
+                  iops_wr_concurrent   = passthrough.value.iops_wr_concurrent
+                  iothread             = passthrough.value.iothread
+                  mbps_r_burst         = passthrough.value.mbps_r_burst
+                  mbps_r_concurrent    = passthrough.value.mbps_r_concurrent
+                  mbps_wr_burst        = passthrough.value.mbps_wr_burst
+                }
+              }
+              dynamic "disk" {
+                for_each = try(scsi0.value.disk, null) != null ? [scsi0.value.disk] : []
+                content {
+                  asyncio              = disk.value.asyncio
+                  backup               = disk.value.backup
+                  cache                = disk.value.cache
+                  discard              = disk.value.discard
+                  format               = disk.value.format
+                  id                   = disk.value.id
+                  iops_r_burst         = disk.value.iops_r_burst
+                  iops_r_burst_length  = disk.value.iops_r_burst_length
+                  iops_r_concurrent    = disk.value.iops_r_concurrent
+                  iops_wr_burst        = disk.value.iops_wr_burst
+                  iops_wr_burst_length = disk.value.iops_wr_burst_length
+                  iops_wr_concurrent   = disk.value.iops_wr_concurrent
+                  iothread             = disk.value.iothread
+                  linked_disk_id       = disk.value.linked_disk_id
+                  mbps_r_burst         = disk.value.mbps_r_burst
+                  mbps_r_concurrent    = disk.value.mbps_r_concurrent
+                  mbps_wr_burst        = disk.value.mbps_wr_burst
+                  mbps_wr_concurrent   = disk.value.mbps_wr_concurrent
+                  readonly             = disk.value.readonly
+                  replicate            = disk.value.replicate
+                  serial               = disk.value.serial
+                  size                 = disk.value.size
+                  storage              = disk.value.storage
+                }
+              }
             }
           }
-          dynamic "cloudinit" {
-            for_each = try(scsi1.value.cloudinit, null) != null ? [scsi1.value.cloudinit] : []
+
+          dynamic "scsi1" {
+            for_each = try(var.disks.scsi.scsi1, null) != null ? [var.disks.scsi.scsi1] : []
             content {
-              storage = cloudinit.value.storage
-            }
-          }
-          dynamic "passthrough" {
-            for_each = try(scsi1.value.passthrough, null) != null ? [scsi1.value.passthrough] : []
-            content {
-              asyncio              = passthrough.value.asyncio
-              backup               = passthrough.value.backup
-              cache                = passthrough.value.cache
-              discard              = passthrough.value.discard
-              emulatessd           = passthrough.value.emulatessd
-              file                 = passthrough.value.file
-              iops_r_burst         = passthrough.value.iops_r_burst
-              iops_r_burst_length  = passthrough.value.iops_r_burst_length
-              iops_r_concurrent    = passthrough.value.iops_r_concurrent
-              iops_wr_burst        = passthrough.value.iops_wr_burst
-              iops_wr_burst_length = passthrough.value.iops_wr_burst_length
-              iops_wr_concurrent   = passthrough.value.iops_wr_concurrent
-              iothread             = passthrough.value.iothread
-              mbps_r_burst         = passthrough.value.mbps_r_burst
-              mbps_r_concurrent    = passthrough.value.mbps_r_concurrent
-              mbps_wr_burst        = passthrough.value.mbps_wr_burst
-            }
-          }
-          dynamic "disk" {
-            for_each = try(scsi1.value.disk, null) != null ? [scsi1.value.disk] : []
-            content {
-              asyncio              = disk.value.asyncio
-              backup               = disk.value.backup
-              cache                = disk.value.cache
-              discard              = disk.value.discard
-              format               = disk.value.format
-              id                   = disk.value.id
-              iops_r_burst         = disk.value.iops_r_burst
-              iops_r_burst_length  = disk.value.iops_r_burst_length
-              iops_r_concurrent    = disk.value.iops_r_concurrent
-              iops_wr_burst        = disk.value.iops_wr_burst
-              iops_wr_burst_length = disk.value.iops_wr_burst_length
-              iops_wr_concurrent   = disk.value.iops_wr_concurrent
-              iothread             = disk.value.iothread
-              linked_disk_id       = disk.value.linked_disk_id
-              mbps_r_burst         = disk.value.mbps_r_burst
-              mbps_r_concurrent    = disk.value.mbps_r_concurrent
-              mbps_wr_burst        = disk.value.mbps_wr_burst
-              mbps_wr_concurrent   = disk.value.mbps_wr_concurrent
-              readonly             = disk.value.readonly
-              replicate            = disk.value.replicate
-              serial               = disk.value.serial
-              size                 = disk.value.size
-              storage              = disk.value.storage
+              dynamic "cdrom" {
+                for_each = try(scsi1.value.cdrom, null) != null ? [scsi1.value.cdrom] : []
+                content {
+                  iso         = cdrom.value.iso
+                  passthrough = cdrom.value.passthrough
+                }
+              }
+              dynamic "cloudinit" {
+                for_each = try(scsi1.value.cloudinit, null) != null ? [scsi1.value.cloudinit] : []
+                content {
+                  storage = cloudinit.value.storage
+                }
+              }
+              dynamic "passthrough" {
+                for_each = try(scsi1.value.passthrough, null) != null ? [scsi1.value.passthrough] : []
+                content {
+                  asyncio              = passthrough.value.asyncio
+                  backup               = passthrough.value.backup
+                  cache                = passthrough.value.cache
+                  discard              = passthrough.value.discard
+                  emulatessd           = passthrough.value.emulatessd
+                  file                 = passthrough.value.file
+                  iops_r_burst         = passthrough.value.iops_r_burst
+                  iops_r_burst_length  = passthrough.value.iops_r_burst_length
+                  iops_r_concurrent    = passthrough.value.iops_r_concurrent
+                  iops_wr_burst        = passthrough.value.iops_wr_burst
+                  iops_wr_burst_length = passthrough.value.iops_wr_burst_length
+                  iops_wr_concurrent   = passthrough.value.iops_wr_concurrent
+                  iothread             = passthrough.value.iothread
+                  mbps_r_burst         = passthrough.value.mbps_r_burst
+                  mbps_r_concurrent    = passthrough.value.mbps_r_concurrent
+                  mbps_wr_burst        = passthrough.value.mbps_wr_burst
+                }
+              }
+              dynamic "disk" {
+                for_each = try(scsi1.value.disk, null) != null ? [scsi1.value.disk] : []
+                content {
+                  asyncio              = disk.value.asyncio
+                  backup               = disk.value.backup
+                  cache                = disk.value.cache
+                  discard              = disk.value.discard
+                  format               = disk.value.format
+                  id                   = disk.value.id
+                  iops_r_burst         = disk.value.iops_r_burst
+                  iops_r_burst_length  = disk.value.iops_r_burst_length
+                  iops_r_concurrent    = disk.value.iops_r_concurrent
+                  iops_wr_burst        = disk.value.iops_wr_burst
+                  iops_wr_burst_length = disk.value.iops_wr_burst_length
+                  iops_wr_concurrent   = disk.value.iops_wr_concurrent
+                  iothread             = disk.value.iothread
+                  linked_disk_id       = disk.value.linked_disk_id
+                  mbps_r_burst         = disk.value.mbps_r_burst
+                  mbps_r_concurrent    = disk.value.mbps_r_concurrent
+                  mbps_wr_burst        = disk.value.mbps_wr_burst
+                  mbps_wr_concurrent   = disk.value.mbps_wr_concurrent
+                  readonly             = disk.value.readonly
+                  replicate            = disk.value.replicate
+                  serial               = disk.value.serial
+                  size                 = disk.value.size
+                  storage              = disk.value.storage
+                }
+              }
             }
           }
         }
@@ -432,7 +447,7 @@ resource "proxmox_vm_qemu" "vm_qemu" {
 
   # these may need to be adjusted
   lifecycle {
-    ignore_changes = [network, ciuser, tags, description]
+    ignore_changes = [network, ciuser, description]
     // ignore_changes  = [network,disk,ciuser]
     //create_before_destroy = false
     //prevent_destroy = false
