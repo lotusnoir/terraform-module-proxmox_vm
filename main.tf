@@ -1,5 +1,6 @@
 resource "proxmox_vm_qemu" "vm_qemu" {
-  name                        = var.name
+  count                       = var.instances
+  name                        = var.staticvmname != null ? var.staticvmname : format("${var.name}${var.vmnameformat}", count.index + 1 + var.start_instance)
   target_node                 = var.target_node
   target_nodes                = var.target_nodes
   vmid                        = var.vmid
@@ -46,7 +47,7 @@ resource "proxmox_vm_qemu" "vm_qemu" {
   sshkeys                   = <<EOF
         ${var.sshkeys}
         EOF
-  ipconfig0                 = var.ipconfig0
+  ipconfig0                 = local.ipconfig0_list[count.index]
   ipconfig1                 = var.ipconfig1
   ipconfig2                 = var.ipconfig2
   ipconfig3                 = var.ipconfig3

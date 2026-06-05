@@ -1,6 +1,30 @@
+variable "instances" {
+  description = ""
+  type        = number
+  default     = 1
+}
+
 variable "name" {
   description = "Required - The name of the VM within Proxmox."
   type        = string
+}
+
+variable "staticvmname" {
+  description = "Instead of name The name of the VM within Proxmox without count / addition ."
+  type        = string
+  default     = null
+}
+
+variable "vmnameformat" {
+  description = "vmname format. default is set to 2 decimal with leading 0. example: %03d for 3 decimal with leading zero or %02dprod for additional suffix"
+  type        = string
+  default     = "%02d"
+}
+
+variable "start_instance" {
+  description = "shift instance number"
+  type        = number
+  default     = 0
 }
 
 variable "target_node" {
@@ -42,7 +66,7 @@ variable "bios" {
 variable "start_at_node_boot" {
   description = "Whether to have the VM startup after the PVE node starts. Defaults to false"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "startup" {
@@ -285,7 +309,7 @@ variable "sshkeys" {
 
 variable "ipconfig0" {
   description = "The first IP address to assign to the guest. Format: [gw=<GatewayIPv4>] [,gw6=<GatewayIPv6>] [,ip=<IPv4Format/CIDR>] [,ip6=<IPv6Format/CIDR>]"
-  type        = string
+  type        = any
   default     = null
 }
 variable "ipconfig1" {
